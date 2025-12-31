@@ -478,7 +478,7 @@ const PricingSection = () => {
               <p className="text-slate-600 mb-8">Il pacchetto completo per portare il tuo immobile al rogito senza pensieri.</p>
               
               <div className="flex items-baseline gap-2 mb-8">
-                <span className="text-5xl font-bold text-slate-900">€900</span>
+                <span className="text-5xl font-bold text-slate-900">€1.100</span>
                 <span className="text-slate-500">+ IVA</span>
               </div>
 
