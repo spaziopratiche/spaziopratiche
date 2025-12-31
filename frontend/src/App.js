@@ -463,7 +463,7 @@ const PricingSection = () => {
             <div className="absolute -inset-4 bg-gradient-to-r from-sky-500 to-blue-600 rounded-3xl opacity-20 blur-xl" />
             <div className="relative bg-white rounded-3xl p-8 lg:p-12 shadow-xl border border-slate-100">
               <div className="inline-block bg-sky-500 text-white text-sm font-bold px-4 py-1 rounded-full mb-6">
-                Combo Unica
+                Esempio di Combo Unica
               </div>
               <h3 className="text-2xl font-bold text-slate-900 mb-2">Pratica + Catasto + APE</h3>
               <p className="text-slate-600 mb-8">Il pacchetto completo per portare il tuo immobile al rogito senza pensieri.</p>
@@ -487,7 +487,7 @@ const PricingSection = () => {
                 className="w-full bg-slate-900 hover:bg-slate-800 text-white rounded-full py-6"
                 data-testid="pricing-cta-button"
               >
-                Scegli Combo Unica
+                Scegli Esempio di Combo Unica
               </Button>
             </div>
           </div>
@@ -558,7 +558,7 @@ const ContactSection = () => {
                 </div>
                 <div>
                   <p className="text-sm text-slate-500">Telefono</p>
-                  <p className="font-semibold text-slate-900">+39 02 1234567</p>
+                  <p className="font-semibold text-slate-900">02/35988262</p>
                 </div>
               </div>
               <div className="flex items-center gap-4">
@@ -576,7 +576,7 @@ const ContactSection = () => {
                 </div>
                 <div>
                   <p className="text-sm text-slate-500">Sede</p>
-                  <p className="font-semibold text-slate-900">Milano, Italia</p>
+                  <p className="font-semibold text-slate-900">Via Belfiore 9, 20149 Milano</p>
                 </div>
               </div>
             </div>
@@ -632,7 +632,7 @@ const ContactSection = () => {
                       <SelectItem value="catasto">Aggiornamenti Catastali</SelectItem>
                       <SelectItem value="ape">Certificazione APE</SelectItem>
                       <SelectItem value="visure">Visure e Atti</SelectItem>
-                      <SelectItem value="combo">Combo Unica</SelectItem>
+                      <SelectItem value="combo">Esempio di Combo Unica</SelectItem>
                       <SelectItem value="altro">Altro</SelectItem>
                     </SelectContent>
                   </Select>
@@ -700,17 +700,6 @@ const Footer = () => {
             </div>
           </div>
 
-          {/* Quick Links */}
-          <div>
-            <h4 className="font-bold text-lg mb-4">Servizi</h4>
-            <ul className="space-y-3 text-slate-400">
-              <li><a href="#servizi" className="hover:text-white transition-colors">Annuncio Immobiliare</a></li>
-              <li><a href="#servizi" className="hover:text-white transition-colors">Pratiche Urbanistiche</a></li>
-              <li><a href="#servizi" className="hover:text-white transition-colors">Catasto</a></li>
-              <li><a href="#servizi" className="hover:text-white transition-colors">Certificazioni APE</a></li>
-            </ul>
-          </div>
-
           {/* Contact */}
           <div>
             <h4 className="font-bold text-lg mb-4">Contatti</h4>
@@ -721,11 +710,11 @@ const Footer = () => {
               </li>
               <li className="flex items-center gap-2">
                 <Phone className="h-4 w-4" />
-                +39 02 1234567
+                02/35988262
               </li>
               <li className="flex items-center gap-2">
                 <MapPin className="h-4 w-4" />
-                Milano, Italia
+                Via Belfiore 9, 20149 Milano
               </li>
             </ul>
           </div>
