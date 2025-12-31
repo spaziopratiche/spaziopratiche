@@ -320,7 +320,7 @@ const ProcessSection = () => {
   return (
     <section id="processo" className="py-16 lg:py-20 bg-slate-50">
       <div className="max-w-7xl mx-auto px-6 lg:px-8">
-        <div className="grid lg:grid-cols-2 gap-16 items-center">
+        <div className="grid lg:grid-cols-2 gap-12 items-center">
           {/* Left Side - Text */}
           <div>
             <span className="text-sky-500 font-semibold text-sm tracking-wider uppercase mb-4 block">Come Funziona</span>
@@ -436,7 +436,7 @@ const PricingSection = () => {
   return (
     <section id="prezzi" className="py-16 lg:py-20 bg-slate-50">
       <div className="max-w-7xl mx-auto px-6 lg:px-8">
-        <div className="grid lg:grid-cols-2 gap-16 items-center">
+        <div className="grid lg:grid-cols-2 gap-12 items-center">
           <div>
             <span className="text-sky-500 font-semibold text-sm tracking-wider uppercase mb-4 block">Offerte</span>
             <h2 className="text-4xl lg:text-5xl font-bold text-slate-900 mb-6">
