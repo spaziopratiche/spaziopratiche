@@ -477,14 +477,6 @@ const PricingSection = () => {
                   </li>
                 ))}
               </ul>
-
-              <Button 
-                onClick={() => document.getElementById("contatti")?.scrollIntoView({ behavior: "smooth" })}
-                className="w-full bg-slate-900 hover:bg-slate-800 text-white rounded-full py-6"
-                data-testid="pricing-cta-button"
-              >
-                Scegli Esempio di Combo Unica
-              </Button>
             </div>
           </div>
         </div>
