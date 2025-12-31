@@ -254,7 +254,7 @@ const ServicesSection = () => {
   ];
 
   return (
-    <section id="servizi" className="py-24 lg:py-32 bg-white">
+    <section id="servizi" className="py-16 lg:py-20 bg-white">
       <div className="max-w-7xl mx-auto px-6 lg:px-8">
         {/* Section Header */}
         <div className="max-w-3xl mb-20">
@@ -318,7 +318,7 @@ const ProcessSection = () => {
   ];
 
   return (
-    <section id="processo" className="py-24 lg:py-32 bg-slate-50">
+    <section id="processo" className="py-16 lg:py-20 bg-slate-50">
       <div className="max-w-7xl mx-auto px-6 lg:px-8">
         <div className="grid lg:grid-cols-2 gap-16 items-center">
           {/* Left Side - Text */}
@@ -367,7 +367,7 @@ const StatsSection = () => {
   ];
 
   return (
-    <section className="py-24 bg-gradient-to-r from-slate-900 to-sky-900 relative overflow-hidden">
+    <section className="py-16 bg-gradient-to-r from-slate-900 to-sky-900 relative overflow-hidden">
       {/* Background Pattern */}
       <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-[size:60px_60px]" />
       
@@ -404,7 +404,7 @@ const WhyUsSection = () => {
   ];
 
   return (
-    <section className="py-24 lg:py-32 bg-white">
+    <section className="py-16 lg:py-20 bg-white">
       <div className="max-w-7xl mx-auto px-6 lg:px-8">
         <div className="text-center max-w-3xl mx-auto mb-16">
           <span className="text-sky-500 font-semibold text-sm tracking-wider uppercase mb-4 block">Perché Sceglierci</span>
@@ -434,7 +434,7 @@ const WhyUsSection = () => {
 // Pricing Section
 const PricingSection = () => {
   return (
-    <section id="prezzi" className="py-24 lg:py-32 bg-slate-50">
+    <section id="prezzi" className="py-16 lg:py-20 bg-slate-50">
       <div className="max-w-7xl mx-auto px-6 lg:px-8">
         <div className="grid lg:grid-cols-2 gap-16 items-center">
           <div>
@@ -525,7 +525,7 @@ const ContactSection = () => {
   };
 
   return (
-    <section id="contatti" className="py-24 lg:py-32 bg-white">
+    <section id="contatti" className="py-16 lg:py-20 bg-white">
       <div className="max-w-7xl mx-auto px-6 lg:px-8">
         <div className="grid lg:grid-cols-2 gap-16">
           {/* Left - Info */}
