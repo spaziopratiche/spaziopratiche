@@ -257,7 +257,7 @@ const ServicesSection = () => {
     <section id="servizi" className="py-16 lg:py-20 bg-white">
       <div className="max-w-7xl mx-auto px-6 lg:px-8">
         {/* Section Header */}
-        <div className="max-w-3xl mb-20">
+        <div className="max-w-3xl mb-12">
           <span className="text-sky-500 font-semibold text-sm tracking-wider uppercase mb-4 block">I Nostri Servizi</span>
           <h2 className="text-4xl lg:text-5xl font-bold text-slate-900 mb-6">
             Tutto ciò di cui hai bisogno per arrivare al rogito.
@@ -372,7 +372,7 @@ const StatsSection = () => {
       <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-[size:60px_60px]" />
       
       <div className="relative max-w-7xl mx-auto px-6 lg:px-8">
-        <div className="text-center mb-16">
+        <div className="text-center mb-10">
           <h2 className="text-3xl lg:text-4xl font-bold text-white mb-4">I nostri numeri parlano chiaro</h2>
           <p className="text-white/70">Risultati concreti che dimostrano il nostro impegno</p>
         </div>
@@ -406,7 +406,7 @@ const WhyUsSection = () => {
   return (
     <section className="py-16 lg:py-20 bg-white">
       <div className="max-w-7xl mx-auto px-6 lg:px-8">
-        <div className="text-center max-w-3xl mx-auto mb-16">
+        <div className="text-center max-w-3xl mx-auto mb-10">
           <span className="text-sky-500 font-semibold text-sm tracking-wider uppercase mb-4 block">Perché Sceglierci</span>
           <h2 className="text-4xl lg:text-5xl font-bold text-slate-900 mb-6">
             La scelta migliore per le tue pratiche.
@@ -527,14 +527,14 @@ const ContactSection = () => {
   return (
     <section id="contatti" className="py-16 lg:py-20 bg-white">
       <div className="max-w-7xl mx-auto px-6 lg:px-8">
-        <div className="grid lg:grid-cols-2 gap-16">
+        <div className="grid lg:grid-cols-2 gap-12">
           {/* Left - Info */}
           <div>
             <span className="text-sky-500 font-semibold text-sm tracking-wider uppercase mb-4 block">Contattaci</span>
             <h2 className="text-4xl lg:text-5xl font-bold text-slate-900 mb-6">
               Sei pronto a massimizzare la tua produttività?
             </h2>
-            <p className="text-lg text-slate-600 mb-12">
+            <p className="text-lg text-slate-600 mb-8">
               Compila il form e ti ricontatteremo entro 24 ore lavorative. 
               Siamo qui per semplificare la tua gestione burocratica.
             </p>
