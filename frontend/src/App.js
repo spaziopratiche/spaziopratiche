@@ -331,18 +331,9 @@ const ProcessSection = () => {
             <h2 className="text-4xl lg:text-5xl font-bold text-slate-900 mb-6">
               Dal problema alla soluzione in 5 semplici passi.
             </h2>
-            <p className="text-lg text-slate-600 mb-8">
+            <p className="text-lg text-slate-600">
               Durante tutto il processo sarà nostra cura mantenere con il proprietario la massima riservatezza in relazione agli accordi economici e di incarico presi con l'agenzia di riferimento.
             </p>
-            <div className="flex items-center gap-4 p-4 bg-white rounded-2xl shadow-sm">
-              <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
-                <CheckCircle2 className="h-6 w-6 text-green-600" />
-              </div>
-              <div>
-                <p className="font-semibold text-slate-900">Hai reso un notaio felice :)</p>
-                <p className="text-sm text-slate-500">Fine del processo</p>
-              </div>
-            </div>
           </div>
 
           {/* Right Side - Steps */}
