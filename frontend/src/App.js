@@ -260,7 +260,7 @@ const ServicesSection = () => {
         <div className="max-w-3xl mb-12">
           <span className="text-sky-500 font-semibold text-sm tracking-wider uppercase mb-4 block">I Nostri Servizi</span>
           <h2 className="text-4xl lg:text-5xl font-bold text-slate-900 mb-6">
-            Tutto ciò di cui hai bisogno per arrivare al rogito.
+            Tutto ciò di cui hai bisogno per arrivare al rogito senza problemi.
           </h2>
           <p className="text-lg text-slate-600">
             La nostra attività si concentra su una gamma completa di servizi legati alla compravendita e alla locazione di immobili.
