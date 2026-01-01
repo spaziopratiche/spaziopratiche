@@ -671,7 +671,10 @@ async def create_appointment(input: AppointmentCreate, current_user: User = Depe
         agency_name=current_user.agency_name,
         date=input.date,
         time=input.time,
-        notes=input.notes,
+        appointment_address=input.appointment_address,
+        contact_person=input.contact_person,
+        contact_phone=input.contact_phone,
+        intercom_name=input.intercom_name,
         status="pending"  # Pending until admin confirms
     )
     
