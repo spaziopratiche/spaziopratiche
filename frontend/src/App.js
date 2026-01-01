@@ -307,7 +307,7 @@ const BookingModal = ({ isOpen, onClose, user, onLogin, onLogout, onRegister, to
       }, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      toast.success("Appuntamento prenotato con successo!");
+      toast.success("Slot bloccato! Riceverai una email di conferma a breve.");
       setBookingNotes('');
       fetchAvailability(selectedDate);
       fetchMyAppointments();
