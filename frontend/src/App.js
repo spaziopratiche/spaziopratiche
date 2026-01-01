@@ -253,7 +253,13 @@ const BookingModal = ({ isOpen, onClose, user, onLogin, onLogout, onRegister, to
   const [availability, setAvailability] = useState(null);
   const [myAppointments, setMyAppointments] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [bookingNotes, setBookingNotes] = useState('');
+  const [selectedTime, setSelectedTime] = useState(null);
+  const [bookingForm, setBookingForm] = useState({
+    appointment_address: '',
+    contact_person: '',
+    contact_phone: '',
+    intercom_name: ''
+  });
 
   useEffect(() => {
     if (user) {
