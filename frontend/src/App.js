@@ -719,12 +719,14 @@ const BookingModal = ({ isOpen, onClose, user, onLogin, onLogout, onRegister, to
                           {availability.slots.map(slot => (
                             <button
                               key={slot.time}
-                              onClick={() => slot.available && handleBookSlot(slot.time)}
+                              onClick={() => slot.available && setSelectedTime(slot.time)}
                               disabled={!slot.available}
                               className={`
                                 py-3 rounded-lg text-sm font-medium transition-all
                                 ${slot.available 
-                                  ? 'bg-green-100 text-green-700 hover:bg-green-200' 
+                                  ? selectedTime === slot.time
+                                    ? 'bg-sky-500 text-white'
+                                    : 'bg-green-100 text-green-700 hover:bg-green-200' 
                                   : 'bg-slate-100 text-slate-400 cursor-not-allowed line-through'}
                               `}
                             >
@@ -732,15 +734,80 @@ const BookingModal = ({ isOpen, onClose, user, onLogin, onLogout, onRegister, to
                             </button>
                           ))}
                         </div>
-                        <div>
-                          <label className="block text-sm font-medium text-slate-700 mb-1">Note (opzionale)</label>
-                          <Textarea
-                            value={bookingNotes}
-                            onChange={(e) => setBookingNotes(e.target.value)}
-                            placeholder="Aggiungi note per l'appuntamento..."
-                            rows={2}
-                          />
-                        </div>
+                        
+                        {/* Booking Form - shows when time is selected */}
+                        {selectedTime && (
+                          <div className="bg-sky-50 rounded-xl p-4 space-y-4">
+                            <h4 className="font-semibold text-slate-900">
+                              Prenota per le {selectedTime}
+                            </h4>
+                            
+                            <div>
+                              <label className="block text-sm font-medium text-slate-700 mb-1">
+                                Indirizzo appuntamento *
+                              </label>
+                              <Input
+                                value={bookingForm.appointment_address}
+                                onChange={(e) => setBookingForm({...bookingForm, appointment_address: e.target.value})}
+                                placeholder="Via, numero civico, città"
+                                className="bg-white"
+                              />
+                            </div>
+                            
+                            <div>
+                              <label className="block text-sm font-medium text-slate-700 mb-1">
+                                Chi sarà presente *
+                              </label>
+                              <Input
+                                value={bookingForm.contact_person}
+                                onChange={(e) => setBookingForm({...bookingForm, contact_person: e.target.value})}
+                                placeholder="Nome e cognome"
+                                className="bg-white"
+                              />
+                            </div>
+                            
+                            <div>
+                              <label className="block text-sm font-medium text-slate-700 mb-1">
+                                Telefono emergenza *
+                              </label>
+                              <Input
+                                value={bookingForm.contact_phone}
+                                onChange={(e) => setBookingForm({...bookingForm, contact_phone: e.target.value})}
+                                placeholder="+39 ..."
+                                className="bg-white"
+                              />
+                            </div>
+                            
+                            <div>
+                              <label className="block text-sm font-medium text-slate-700 mb-1">
+                                Citofono (opzionale)
+                              </label>
+                              <Input
+                                value={bookingForm.intercom_name}
+                                onChange={(e) => setBookingForm({...bookingForm, intercom_name: e.target.value})}
+                                placeholder="Nome sul citofono"
+                                className="bg-white"
+                              />
+                            </div>
+                            
+                            <div className="flex gap-2 pt-2">
+                              <Button
+                                onClick={() => handleBookSlot(selectedTime)}
+                                disabled={loading}
+                                className="flex-1 bg-sky-500 hover:bg-sky-600 text-white rounded-full"
+                              >
+                                {loading ? "Prenotazione..." : "Conferma Prenotazione"}
+                              </Button>
+                              <Button
+                                variant="outline"
+                                onClick={() => setSelectedTime(null)}
+                                className="rounded-full"
+                              >
+                                Annulla
+                              </Button>
+                            </div>
+                          </div>
+                        )}
                       </>
                     ) : (
                       <div className="text-center py-8 text-slate-500">
