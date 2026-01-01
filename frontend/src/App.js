@@ -304,17 +304,28 @@ const BookingModal = ({ isOpen, onClose, user, onLogin, onLogout, onRegister, to
 
   const handleBookSlot = async (time) => {
     if (!selectedDate || !token) return;
+    
+    // Validate required fields
+    if (!bookingForm.appointment_address || !bookingForm.contact_person || !bookingForm.contact_phone) {
+      toast.error("Compila tutti i campi obbligatori");
+      return;
+    }
+    
     setLoading(true);
     try {
       await axios.post(`${API}/appointments`, {
         date: selectedDate,
         time: time,
-        notes: bookingNotes
+        appointment_address: bookingForm.appointment_address,
+        contact_person: bookingForm.contact_person,
+        contact_phone: bookingForm.contact_phone,
+        intercom_name: bookingForm.intercom_name || null
       }, {
         headers: { Authorization: `Bearer ${token}` }
       });
       toast.success("Slot bloccato! Riceverai una email di conferma a breve.");
-      setBookingNotes('');
+      setBookingForm({ appointment_address: '', contact_person: '', contact_phone: '', intercom_name: '' });
+      setSelectedTime(null);
       fetchAvailability(selectedDate);
       fetchMyAppointments();
     } catch (e) {
