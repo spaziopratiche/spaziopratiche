@@ -413,7 +413,15 @@ async def create_appointment(input: AppointmentCreate, current_user: User = Depe
     except ValueError:
         raise HTTPException(status_code=400, detail="Formato data non valido")
     
-    # Check if slot is available
+    # RULE 1: Must book at least 24 hours in advance
+    now = datetime.now()
+    slot_datetime = datetime.strptime(f"{input.date} {input.time}", "%Y-%m-%d %H:%M")
+    min_booking_time = now + timedelta(hours=24)
+    
+    if slot_datetime < min_booking_time:
+        raise HTTPException(status_code=400, detail="Devi prenotare con almeno 24 ore di anticipo")
+    
+    # Check if slot is available (globally)
     existing = await db.appointments.find_one({
         "date": input.date,
         "time": input.time,
@@ -427,6 +435,38 @@ async def create_appointment(input: AppointmentCreate, current_user: User = Depe
     valid_slots = generate_time_slots()
     if input.time not in valid_slots:
         raise HTTPException(status_code=400, detail="Orario non valido")
+    
+    # RULE 2: If user already has appointments on this day, new one must be consecutive
+    user_appointments_today = await db.appointments.find(
+        {"date": input.date, "user_id": current_user.id, "status": {"$ne": "cancelled"}},
+        {"_id": 0, "time": 1}
+    ).to_list(100)
+    
+    if user_appointments_today:
+        # Get user's booked times for this day
+        user_times = sorted([apt['time'] for apt in user_appointments_today])
+        new_slot_index = valid_slots.index(input.time)
+        
+        # Check if new slot is consecutive to any existing slot
+        is_consecutive = False
+        for existing_time in user_times:
+            existing_index = valid_slots.index(existing_time)
+            # Consecutive means immediately before or after
+            if abs(new_slot_index - existing_index) == 1:
+                is_consecutive = True
+                break
+            # Also check if it connects two existing slots
+            for other_time in user_times:
+                other_index = valid_slots.index(other_time)
+                if new_slot_index == existing_index + 1 and new_slot_index == other_index - 1:
+                    is_consecutive = True
+                    break
+        
+        if not is_consecutive:
+            raise HTTPException(
+                status_code=400, 
+                detail="Se prenoti più appuntamenti nello stesso giorno, devono essere consecutivi"
+            )
     
     # Create appointment
     appointment = Appointment(
