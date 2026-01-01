@@ -77,6 +77,7 @@ def send_email(to_email: str, subject: str, html_content: str):
 def send_admin_notification(appointment: dict, user_email: str):
     """Send notification to admin with approve/reject buttons"""
     date_formatted = datetime.strptime(appointment['date'], "%Y-%m-%d").strftime("%d/%m/%Y")
+    intercom_info = appointment.get('intercom_name', '') or 'Non specificato'
     
     html = f"""
     <!DOCTYPE html>
@@ -89,6 +90,7 @@ def send_admin_notification(appointment: dict, user_email: str):
             .content {{ background: #f8fafc; padding: 20px; border: 1px solid #e2e8f0; }}
             .info-row {{ padding: 10px 0; border-bottom: 1px solid #e2e8f0; }}
             .label {{ font-weight: bold; color: #64748b; }}
+            .highlight {{ background: #fef3c7; padding: 15px; border-radius: 8px; margin: 15px 0; border-left: 4px solid #f59e0b; }}
             .buttons {{ padding: 20px; text-align: center; background: #f1f5f9; border-radius: 0 0 10px 10px; }}
             .btn {{ display: inline-block; padding: 15px 40px; margin: 10px; text-decoration: none; border-radius: 25px; font-weight: bold; font-size: 16px; }}
             .btn-yes {{ background: #22c55e; color: white; }}
@@ -102,25 +104,35 @@ def send_admin_notification(appointment: dict, user_email: str):
             </div>
             <div class="content">
                 <div class="info-row">
-                    <span class="label">Cliente:</span> {appointment['user_name']}
+                    <span class="label">Agenzia:</span> {appointment['agency_name']}
                 </div>
                 <div class="info-row">
-                    <span class="label">Agenzia:</span> {appointment['agency_name']}
+                    <span class="label">Referente:</span> {appointment['user_name']}
                 </div>
                 <div class="info-row">
                     <span class="label">Email:</span> {user_email}
                 </div>
                 <div class="info-row">
-                    <span class="label">Data:</span> {date_formatted}
+                    <span class="label">📅 Data:</span> <strong>{date_formatted}</strong>
                 </div>
                 <div class="info-row">
-                    <span class="label">Ora:</span> {appointment['time']}
+                    <span class="label">🕐 Ora:</span> <strong>{appointment['time']}</strong> ({appointment['duration_minutes']} min)
                 </div>
-                <div class="info-row">
-                    <span class="label">Durata:</span> {appointment['duration_minutes']} minuti
-                </div>
-                <div class="info-row">
-                    <span class="label">Note:</span> {appointment.get('notes', 'Nessuna nota')}
+                
+                <div class="highlight">
+                    <h3 style="margin: 0 0 10px 0; color: #92400e;">📍 Dettagli Appuntamento</h3>
+                    <div class="info-row" style="border: none;">
+                        <span class="label">Indirizzo:</span> {appointment.get('appointment_address', 'N/A')}
+                    </div>
+                    <div class="info-row" style="border: none;">
+                        <span class="label">Presente:</span> {appointment.get('contact_person', 'N/A')}
+                    </div>
+                    <div class="info-row" style="border: none;">
+                        <span class="label">Telefono:</span> {appointment.get('contact_phone', 'N/A')}
+                    </div>
+                    <div class="info-row" style="border: none;">
+                        <span class="label">Citofono:</span> {intercom_info}
+                    </div>
                 </div>
             </div>
             <div class="buttons">
