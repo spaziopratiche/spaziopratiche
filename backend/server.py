@@ -367,9 +367,13 @@ async def get_availability(date: str, current_user: User = Depends(get_current_u
         raise HTTPException(status_code=400, detail="Formato data non valido. Usa YYYY-MM-DD")
     
     # Don't allow past dates
-    today = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
+    now = datetime.now()
+    today = now.replace(hour=0, minute=0, second=0, microsecond=0)
     if date_obj < today:
         raise HTTPException(status_code=400, detail="Non puoi prenotare date passate")
+    
+    # RULE 1: Must book at least 24 hours in advance
+    min_booking_time = now + timedelta(hours=24)
     
     # Don't allow weekends
     if date_obj.weekday() >= 5:
@@ -389,9 +393,13 @@ async def get_availability(date: str, current_user: User = Depends(get_current_u
     # Build availability response
     slots = []
     for time_slot in all_slots:
+        # Check if this slot is at least 24h in the future
+        slot_datetime = datetime.strptime(f"{date} {time_slot}", "%Y-%m-%d %H:%M")
+        is_24h_ahead = slot_datetime >= min_booking_time
+        
         slots.append(TimeSlot(
             time=time_slot,
-            available=time_slot not in booked_times
+            available=(time_slot not in booked_times) and is_24h_ahead
         ))
     
     return DayAvailability(date=date, slots=slots)
