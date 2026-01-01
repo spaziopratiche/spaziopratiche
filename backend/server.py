@@ -645,19 +645,24 @@ async def create_appointment(input: AppointmentCreate, current_user: User = Depe
                 detail="Se prenoti più appuntamenti nello stesso giorno, devono essere consecutivi"
             )
     
-    # Create appointment
+    # Create appointment with PENDING status
     appointment = Appointment(
         user_id=current_user.id,
         user_name=f"{current_user.first_name} {current_user.last_name}",
         agency_name=current_user.agency_name,
         date=input.date,
         time=input.time,
-        notes=input.notes
+        notes=input.notes,
+        status="pending"  # Pending until admin confirms
     )
     
     doc = appointment.model_dump()
     doc['created_at'] = doc['created_at'].isoformat()
+    doc['user_email'] = current_user.email  # Store email for confirmation
     await db.appointments.insert_one(doc)
+    
+    # Send notification email to admin
+    send_admin_notification(doc, current_user.email)
     
     return appointment
 
