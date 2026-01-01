@@ -22,15 +22,72 @@ import {
   Shield,
   Users,
   Award,
-  ChevronDown,
   Menu,
-  X
+  X,
+  Calendar,
+  LogIn,
+  LogOut,
+  User,
+  ChevronLeft,
+  ChevronRight
 } from "lucide-react";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
-// Animated Counter Component
+// =====================
+// AUTH CONTEXT
+// =====================
+const useAuth = () => {
+  const [user, setUser] = useState(null);
+  const [token, setToken] = useState(localStorage.getItem('token'));
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (token) {
+      axios.get(`${API}/auth/me`, {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+      .then(res => {
+        setUser(res.data);
+        setLoading(false);
+      })
+      .catch(() => {
+        localStorage.removeItem('token');
+        setToken(null);
+        setUser(null);
+        setLoading(false);
+      });
+    } else {
+      setLoading(false);
+    }
+  }, [token]);
+
+  const login = async (username, password) => {
+    const res = await axios.post(`${API}/auth/login`, { username, password });
+    localStorage.setItem('token', res.data.access_token);
+    setToken(res.data.access_token);
+    setUser(res.data.user);
+    return res.data;
+  };
+
+  const logout = () => {
+    localStorage.removeItem('token');
+    setToken(null);
+    setUser(null);
+  };
+
+  const register = async (data) => {
+    const res = await axios.post(`${API}/auth/register`, data);
+    return res.data;
+  };
+
+  return { user, token, loading, login, logout, register };
+};
+
+// =====================
+// ANIMATED COUNTER
+// =====================
 const AnimatedCounter = ({ end, duration = 2000, suffix = "" }) => {
   const [count, setCount] = useState(0);
   const [isVisible, setIsVisible] = useState(false);
@@ -71,8 +128,10 @@ const AnimatedCounter = ({ end, duration = 2000, suffix = "" }) => {
   return <span ref={ref}>{count}{suffix}</span>;
 };
 
-// Navigation
-const Navigation = () => {
+// =====================
+// NAVIGATION
+// =====================
+const Navigation = ({ onOpenBooking, user, onLogout }) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -110,12 +169,32 @@ const Navigation = () => {
                 {item}
               </button>
             ))}
-            <Button 
-              onClick={() => scrollToSection("contatti")}
-              className="bg-sky-500 hover:bg-sky-600 text-white rounded-full px-6"
-            >
-              Richiedi Preventivo
-            </Button>
+            
+            {user ? (
+              <div className="flex items-center gap-4">
+                <Button 
+                  onClick={onOpenBooking}
+                  className="bg-green-500 hover:bg-green-600 text-white rounded-full px-4"
+                >
+                  <Calendar className="w-4 h-4 mr-2" />
+                  Prenota
+                </Button>
+                <button
+                  onClick={onLogout}
+                  className={`flex items-center gap-2 text-sm font-medium transition-colors hover:text-sky-500 ${isScrolled ? "text-slate-600" : "text-white/90"}`}
+                >
+                  <LogOut className="w-4 h-4" />
+                </button>
+              </div>
+            ) : (
+              <Button 
+                onClick={onOpenBooking}
+                className="bg-sky-500 hover:bg-sky-600 text-white rounded-full px-6"
+              >
+                <Calendar className="w-4 h-4 mr-2" />
+                Area Clienti
+              </Button>
+            )}
           </div>
 
           {/* Mobile Menu Button */}
@@ -144,10 +223,11 @@ const Navigation = () => {
               </button>
             ))}
             <Button 
-              onClick={() => scrollToSection("contatti")}
+              onClick={() => { onOpenBooking(); setIsMobileMenuOpen(false); }}
               className="w-full mt-4 bg-sky-500 hover:bg-sky-600 text-white rounded-full"
             >
-              Richiedi Preventivo
+              <Calendar className="w-4 h-4 mr-2" />
+              {user ? "Prenota Appuntamento" : "Area Clienti"}
             </Button>
           </div>
         )}
@@ -156,7 +236,521 @@ const Navigation = () => {
   );
 };
 
-// Hero Section
+// =====================
+// BOOKING MODAL
+// =====================
+const BookingModal = ({ isOpen, onClose, user, onLogin, onLogout, onRegister, token }) => {
+  const [view, setView] = useState(user ? 'calendar' : 'login');
+  const [loginData, setLoginData] = useState({ username: '', password: '' });
+  const [registerData, setRegisterData] = useState({
+    first_name: '', last_name: '', email: '',
+    agency_name: '', agency_address: '',
+    partita_iva: '', sede_legale: '', codice_univoco: '',
+    username: '', password: '', confirmPassword: ''
+  });
+  const [selectedDate, setSelectedDate] = useState(null);
+  const [currentMonth, setCurrentMonth] = useState(new Date());
+  const [availability, setAvailability] = useState(null);
+  const [myAppointments, setMyAppointments] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [bookingNotes, setBookingNotes] = useState('');
+
+  useEffect(() => {
+    if (user) {
+      setView('calendar');
+      fetchMyAppointments();
+    } else {
+      setView('login');
+    }
+  }, [user]);
+
+  const fetchMyAppointments = async () => {
+    if (!token) return;
+    try {
+      const res = await axios.get(`${API}/appointments/my`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setMyAppointments(res.data);
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const fetchAvailability = async (date) => {
+    if (!token) return;
+    setLoading(true);
+    try {
+      const res = await axios.get(`${API}/appointments/availability/${date}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setAvailability(res.data);
+    } catch (e) {
+      toast.error("Errore nel caricamento disponibilità");
+    }
+    setLoading(false);
+  };
+
+  const handleDateSelect = (date) => {
+    const dateStr = date.toISOString().split('T')[0];
+    setSelectedDate(dateStr);
+    fetchAvailability(dateStr);
+  };
+
+  const handleBookSlot = async (time) => {
+    if (!selectedDate || !token) return;
+    setLoading(true);
+    try {
+      await axios.post(`${API}/appointments`, {
+        date: selectedDate,
+        time: time,
+        notes: bookingNotes
+      }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      toast.success("Appuntamento prenotato con successo!");
+      setBookingNotes('');
+      fetchAvailability(selectedDate);
+      fetchMyAppointments();
+    } catch (e) {
+      toast.error(e.response?.data?.detail || "Errore nella prenotazione");
+    }
+    setLoading(false);
+  };
+
+  const handleCancelAppointment = async (id) => {
+    if (!token) return;
+    try {
+      await axios.delete(`${API}/appointments/${id}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      toast.success("Appuntamento cancellato");
+      fetchMyAppointments();
+      if (selectedDate) fetchAvailability(selectedDate);
+    } catch (e) {
+      toast.error("Errore nella cancellazione");
+    }
+  };
+
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      await onLogin(loginData.username, loginData.password);
+      toast.success("Accesso effettuato!");
+      setView('calendar');
+    } catch (e) {
+      toast.error(e.response?.data?.detail || "Credenziali non valide");
+    }
+    setLoading(false);
+  };
+
+  const handleRegister = async (e) => {
+    e.preventDefault();
+    if (registerData.password !== registerData.confirmPassword) {
+      toast.error("Le password non coincidono");
+      return;
+    }
+    setLoading(true);
+    try {
+      await onRegister(registerData);
+      toast.success("Registrazione completata! Ora puoi accedere.");
+      setView('login');
+      setLoginData({ username: registerData.username, password: '' });
+    } catch (e) {
+      toast.error(e.response?.data?.detail || "Errore nella registrazione");
+    }
+    setLoading(false);
+  };
+
+  // Calendar helpers
+  const getDaysInMonth = (date) => {
+    const year = date.getFullYear();
+    const month = date.getMonth();
+    const firstDay = new Date(year, month, 1);
+    const lastDay = new Date(year, month + 1, 0);
+    const daysInMonth = lastDay.getDate();
+    const startingDay = firstDay.getDay() === 0 ? 6 : firstDay.getDay() - 1;
+    
+    const days = [];
+    for (let i = 0; i < startingDay; i++) {
+      days.push(null);
+    }
+    for (let i = 1; i <= daysInMonth; i++) {
+      days.push(new Date(year, month, i));
+    }
+    return days;
+  };
+
+  const isWeekend = (date) => date && (date.getDay() === 0 || date.getDay() === 6);
+  const isPast = (date) => {
+    if (!date) return true;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return date < today;
+  };
+
+  const formatDate = (dateStr) => {
+    const d = new Date(dateStr);
+    return d.toLocaleDateString('it-IT', { weekday: 'long', day: 'numeric', month: 'long' });
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
+      <div className="bg-white rounded-3xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden">
+        {/* Header */}
+        <div className="bg-gradient-to-r from-slate-900 to-sky-900 px-6 py-4 flex items-center justify-between">
+          <h2 className="text-xl font-bold text-white flex items-center gap-2">
+            <Calendar className="w-5 h-5" />
+            {user ? `Ciao, ${user.first_name}!` : 'Area Clienti'}
+          </h2>
+          <button onClick={onClose} className="text-white/80 hover:text-white">
+            <X className="w-6 h-6" />
+          </button>
+        </div>
+
+        <div className="p-6 overflow-y-auto max-h-[calc(90vh-80px)]">
+          {/* LOGIN VIEW */}
+          {view === 'login' && !user && (
+            <div className="max-w-md mx-auto">
+              <h3 className="text-2xl font-bold text-slate-900 mb-6 text-center">Accedi</h3>
+              <form onSubmit={handleLogin} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">Username</label>
+                  <Input
+                    value={loginData.username}
+                    onChange={(e) => setLoginData({...loginData, username: e.target.value})}
+                    placeholder="Il tuo username"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">Password</label>
+                  <Input
+                    type="password"
+                    value={loginData.password}
+                    onChange={(e) => setLoginData({...loginData, password: e.target.value})}
+                    placeholder="La tua password"
+                    required
+                  />
+                </div>
+                <Button type="submit" disabled={loading} className="w-full bg-sky-500 hover:bg-sky-600 rounded-full">
+                  {loading ? "Accesso..." : "Accedi"}
+                </Button>
+              </form>
+              <p className="text-center mt-6 text-slate-600">
+                Non hai un account?{' '}
+                <button onClick={() => setView('register')} className="text-sky-500 font-semibold hover:underline">
+                  Registrati
+                </button>
+              </p>
+            </div>
+          )}
+
+          {/* REGISTER VIEW */}
+          {view === 'register' && !user && (
+            <div className="max-w-2xl mx-auto">
+              <h3 className="text-2xl font-bold text-slate-900 mb-6 text-center">Registra la tua Agenzia</h3>
+              <form onSubmit={handleRegister} className="space-y-6">
+                {/* Referente */}
+                <div className="bg-slate-50 rounded-xl p-4">
+                  <h4 className="font-semibold text-slate-900 mb-3 flex items-center gap-2">
+                    <User className="w-4 h-4" /> Dati Referente
+                  </h4>
+                  <div className="grid sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 mb-1">Nome *</label>
+                      <Input
+                        value={registerData.first_name}
+                        onChange={(e) => setRegisterData({...registerData, first_name: e.target.value})}
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 mb-1">Cognome *</label>
+                      <Input
+                        value={registerData.last_name}
+                        onChange={(e) => setRegisterData({...registerData, last_name: e.target.value})}
+                        required
+                      />
+                    </div>
+                    <div className="sm:col-span-2">
+                      <label className="block text-sm font-medium text-slate-700 mb-1">Email *</label>
+                      <Input
+                        type="email"
+                        value={registerData.email}
+                        onChange={(e) => setRegisterData({...registerData, email: e.target.value})}
+                        required
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Agenzia */}
+                <div className="bg-slate-50 rounded-xl p-4">
+                  <h4 className="font-semibold text-slate-900 mb-3 flex items-center gap-2">
+                    <Building2 className="w-4 h-4" /> Dati Agenzia
+                  </h4>
+                  <div className="grid sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 mb-1">Nome Agenzia *</label>
+                      <Input
+                        value={registerData.agency_name}
+                        onChange={(e) => setRegisterData({...registerData, agency_name: e.target.value})}
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 mb-1">Sede Agenzia *</label>
+                      <Input
+                        value={registerData.agency_address}
+                        onChange={(e) => setRegisterData({...registerData, agency_address: e.target.value})}
+                        required
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Fatturazione */}
+                <div className="bg-slate-50 rounded-xl p-4">
+                  <h4 className="font-semibold text-slate-900 mb-3 flex items-center gap-2">
+                    <FileText className="w-4 h-4" /> Dati Fatturazione
+                  </h4>
+                  <div className="grid sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 mb-1">Partita IVA *</label>
+                      <Input
+                        value={registerData.partita_iva}
+                        onChange={(e) => setRegisterData({...registerData, partita_iva: e.target.value})}
+                        maxLength={11}
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 mb-1">Codice Univoco *</label>
+                      <Input
+                        value={registerData.codice_univoco}
+                        onChange={(e) => setRegisterData({...registerData, codice_univoco: e.target.value.toUpperCase()})}
+                        maxLength={7}
+                        required
+                      />
+                    </div>
+                    <div className="sm:col-span-2">
+                      <label className="block text-sm font-medium text-slate-700 mb-1">Sede Legale *</label>
+                      <Input
+                        value={registerData.sede_legale}
+                        onChange={(e) => setRegisterData({...registerData, sede_legale: e.target.value})}
+                        required
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Credenziali */}
+                <div className="bg-sky-50 rounded-xl p-4">
+                  <h4 className="font-semibold text-slate-900 mb-3 flex items-center gap-2">
+                    <LogIn className="w-4 h-4" /> Credenziali di Accesso
+                  </h4>
+                  <div className="grid sm:grid-cols-3 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 mb-1">Username *</label>
+                      <Input
+                        value={registerData.username}
+                        onChange={(e) => setRegisterData({...registerData, username: e.target.value})}
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 mb-1">Password *</label>
+                      <Input
+                        type="password"
+                        value={registerData.password}
+                        onChange={(e) => setRegisterData({...registerData, password: e.target.value})}
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 mb-1">Conferma Password *</label>
+                      <Input
+                        type="password"
+                        value={registerData.confirmPassword}
+                        onChange={(e) => setRegisterData({...registerData, confirmPassword: e.target.value})}
+                        required
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <Button type="submit" disabled={loading} className="w-full bg-sky-500 hover:bg-sky-600 rounded-full py-6">
+                  {loading ? "Registrazione..." : "Completa Registrazione"}
+                </Button>
+              </form>
+              <p className="text-center mt-6 text-slate-600">
+                Hai già un account?{' '}
+                <button onClick={() => setView('login')} className="text-sky-500 font-semibold hover:underline">
+                  Accedi
+                </button>
+              </p>
+            </div>
+          )}
+
+          {/* CALENDAR VIEW */}
+          {user && view === 'calendar' && (
+            <div className="grid lg:grid-cols-2 gap-6">
+              {/* Calendar */}
+              <div>
+                <div className="flex items-center justify-between mb-4">
+                  <button 
+                    onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1))}
+                    className="p-2 hover:bg-slate-100 rounded-full"
+                  >
+                    <ChevronLeft className="w-5 h-5" />
+                  </button>
+                  <h3 className="font-semibold text-lg">
+                    {currentMonth.toLocaleDateString('it-IT', { month: 'long', year: 'numeric' })}
+                  </h3>
+                  <button 
+                    onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1))}
+                    className="p-2 hover:bg-slate-100 rounded-full"
+                  >
+                    <ChevronRight className="w-5 h-5" />
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-7 gap-1 mb-2">
+                  {['Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab', 'Dom'].map(day => (
+                    <div key={day} className="text-center text-xs font-medium text-slate-500 py-2">
+                      {day}
+                    </div>
+                  ))}
+                </div>
+
+                <div className="grid grid-cols-7 gap-1">
+                  {getDaysInMonth(currentMonth).map((date, i) => {
+                    const isDisabled = !date || isWeekend(date) || isPast(date);
+                    const isSelected = date && selectedDate === date.toISOString().split('T')[0];
+                    
+                    return (
+                      <button
+                        key={i}
+                        onClick={() => date && !isDisabled && handleDateSelect(date)}
+                        disabled={isDisabled}
+                        className={`
+                          aspect-square rounded-lg text-sm font-medium transition-all
+                          ${!date ? 'invisible' : ''}
+                          ${isDisabled ? 'text-slate-300 cursor-not-allowed' : 'hover:bg-sky-100 text-slate-700'}
+                          ${isSelected ? 'bg-sky-500 text-white hover:bg-sky-600' : ''}
+                        `}
+                      >
+                        {date?.getDate()}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* My Appointments */}
+                {myAppointments.length > 0 && (
+                  <div className="mt-6">
+                    <h4 className="font-semibold text-slate-900 mb-3">I tuoi appuntamenti</h4>
+                    <div className="space-y-2">
+                      {myAppointments.map(apt => (
+                        <div key={apt.id} className="flex items-center justify-between bg-green-50 rounded-lg p-3">
+                          <div>
+                            <p className="font-medium text-slate-900">{formatDate(apt.date)}</p>
+                            <p className="text-sm text-slate-600">{apt.time} - {apt.duration_minutes} min</p>
+                          </div>
+                          <button 
+                            onClick={() => handleCancelAppointment(apt.id)}
+                            className="text-red-500 text-sm hover:underline"
+                          >
+                            Cancella
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Time Slots */}
+              <div>
+                {selectedDate ? (
+                  <>
+                    <h3 className="font-semibold text-lg mb-4">
+                      Orari disponibili - {formatDate(selectedDate)}
+                    </h3>
+                    
+                    {loading ? (
+                      <div className="text-center py-8 text-slate-500">Caricamento...</div>
+                    ) : availability?.slots?.length > 0 ? (
+                      <>
+                        <div className="grid grid-cols-3 gap-2 mb-4">
+                          {availability.slots.map(slot => (
+                            <button
+                              key={slot.time}
+                              onClick={() => slot.available && handleBookSlot(slot.time)}
+                              disabled={!slot.available}
+                              className={`
+                                py-3 rounded-lg text-sm font-medium transition-all
+                                ${slot.available 
+                                  ? 'bg-green-100 text-green-700 hover:bg-green-200' 
+                                  : 'bg-slate-100 text-slate-400 cursor-not-allowed line-through'}
+                              `}
+                            >
+                              {slot.time}
+                            </button>
+                          ))}
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-slate-700 mb-1">Note (opzionale)</label>
+                          <Textarea
+                            value={bookingNotes}
+                            onChange={(e) => setBookingNotes(e.target.value)}
+                            placeholder="Aggiungi note per l'appuntamento..."
+                            rows={2}
+                          />
+                        </div>
+                      </>
+                    ) : (
+                      <div className="text-center py-8 text-slate-500">
+                        Nessun orario disponibile per questa data
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <div className="flex items-center justify-center h-full text-slate-500">
+                    <div className="text-center">
+                      <Calendar className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                      <p>Seleziona una data dal calendario</p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Logout button for logged users */}
+          {user && (
+            <div className="mt-6 pt-4 border-t flex justify-between items-center">
+              <p className="text-sm text-slate-500">
+                Connesso come <strong>{user.agency_name}</strong>
+              </p>
+              <Button variant="outline" onClick={onLogout} className="rounded-full">
+                <LogOut className="w-4 h-4 mr-2" />
+                Esci
+              </Button>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// =====================
+// HERO SECTION
+// =====================
 const HeroSection = () => {
   const scrollToContatti = () => {
     document.getElementById("contatti")?.scrollIntoView({ behavior: "smooth" });
@@ -212,13 +806,14 @@ const HeroSection = () => {
             Scopri i Servizi
           </Button>
         </div>
-
       </div>
     </section>
   );
 };
 
-// Services Section - Editorial Style (No Cards)
+// =====================
+// SERVICES SECTION
+// =====================
 const ServicesSection = () => {
   const services = [
     {
@@ -256,7 +851,6 @@ const ServicesSection = () => {
   return (
     <section id="servizi" className="py-16 lg:py-20 bg-white">
       <div className="max-w-7xl mx-auto px-6 lg:px-8">
-        {/* Section Header */}
         <div className="max-w-3xl mb-12">
           <span className="text-sky-500 font-semibold text-sm tracking-wider uppercase mb-4 block">I Nostri Servizi</span>
           <h2 className="text-4xl lg:text-5xl font-bold text-slate-900 mb-6">
@@ -267,12 +861,11 @@ const ServicesSection = () => {
           </p>
         </div>
 
-        {/* Services List - Editorial Style */}
         <div className="space-y-0 divide-y divide-slate-200">
           {services.map((service, index) => (
             <div 
               key={index}
-              className="group py-8 lg:py-12 grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-12 items-center hover:bg-slate-50 transition-colors -mx-6 px-6 lg:-mx-8 lg:px-8 cursor-pointer"
+              className="group py-8 lg:py-10 grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-12 items-center hover:bg-slate-50 transition-colors -mx-6 px-6 lg:-mx-8 lg:px-8 cursor-pointer"
               data-testid={`service-item-${index}`}
             >
               <div className="lg:col-span-1 flex items-center">
@@ -307,7 +900,9 @@ const ServicesSection = () => {
   );
 };
 
-// Process Section - Timeline Style
+// =====================
+// PROCESS SECTION
+// =====================
 const ProcessSection = () => {
   const steps = [
     { number: "01", title: "Contatto", description: "Hai deciso di contattarci perché ti serve supporto?" },
@@ -321,7 +916,6 @@ const ProcessSection = () => {
     <section id="processo" className="py-16 lg:py-20 bg-slate-50">
       <div className="max-w-7xl mx-auto px-6 lg:px-8">
         <div className="grid lg:grid-cols-2 gap-12 items-center">
-          {/* Left Side - Text */}
           <div>
             <span className="text-sky-500 font-semibold text-sm tracking-wider uppercase mb-4 block">Come Funziona</span>
             <h2 className="text-4xl lg:text-5xl font-bold text-slate-900 mb-6">
@@ -332,18 +926,16 @@ const ProcessSection = () => {
             </p>
           </div>
 
-          {/* Right Side - Steps */}
           <div className="relative">
-            {/* Vertical Line */}
             <div className="absolute left-6 top-0 bottom-0 w-px bg-gradient-to-b from-sky-500 via-sky-300 to-transparent" />
             
-            <div className="space-y-8">
+            <div className="space-y-6">
               {steps.map((step, index) => (
                 <div key={index} className="relative flex gap-6 group" data-testid={`process-step-${index}`}>
                   <div className="relative z-10 w-12 h-12 rounded-full bg-white border-2 border-sky-500 flex items-center justify-center font-bold text-sky-500 group-hover:bg-sky-500 group-hover:text-white transition-colors shadow-lg">
                     {step.number}
                   </div>
-                  <div className="flex-1 pb-8">
+                  <div className="flex-1 pb-6">
                     <h3 className="text-xl font-bold text-slate-900 mb-2">{step.title}</h3>
                     <p className="text-slate-600">{step.description}</p>
                   </div>
@@ -357,7 +949,9 @@ const ProcessSection = () => {
   );
 };
 
-// Stats Section
+// =====================
+// STATS SECTION
+// =====================
 const StatsSection = () => {
   const stats = [
     { value: 1250, suffix: "+", label: "Pratiche Edilizie" },
@@ -368,7 +962,6 @@ const StatsSection = () => {
 
   return (
     <section className="py-16 bg-gradient-to-r from-slate-900 to-sky-900 relative overflow-hidden">
-      {/* Background Pattern */}
       <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-[size:60px_60px]" />
       
       <div className="relative max-w-7xl mx-auto px-6 lg:px-8">
@@ -392,7 +985,9 @@ const StatsSection = () => {
   );
 };
 
-// Why Choose Us Section
+// =====================
+// WHY US SECTION
+// =====================
 const WhyUsSection = () => {
   const reasons = [
     { icon: Clock, title: "CILA in Sanatoria in meno di 3gg", description: "Tempi rapidissimi per le tue pratiche urgenti" },
@@ -413,7 +1008,7 @@ const WhyUsSection = () => {
           </h2>
         </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-x-12 gap-y-10">
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-x-12 gap-y-8">
           {reasons.map((reason, index) => (
             <div key={index} className="flex gap-4 group" data-testid={`reason-${index}`}>
               <div className="flex-shrink-0 w-12 h-12 rounded-2xl bg-sky-50 flex items-center justify-center group-hover:bg-sky-500 transition-colors">
@@ -431,7 +1026,9 @@ const WhyUsSection = () => {
   );
 };
 
-// Pricing Section
+// =====================
+// PRICING SECTION
+// =====================
 const PricingSection = () => {
   return (
     <section id="prezzi" className="py-16 lg:py-20 bg-slate-50">
@@ -454,7 +1051,6 @@ const PricingSection = () => {
             </Button>
           </div>
 
-          {/* Featured Package */}
           <div className="relative">
             <div className="absolute -inset-4 bg-gradient-to-r from-sky-500 to-blue-600 rounded-3xl opacity-20 blur-xl" />
             <div className="relative bg-white rounded-3xl p-8 lg:p-12 shadow-xl border border-slate-100">
@@ -485,7 +1081,9 @@ const PricingSection = () => {
   );
 };
 
-// Contact Section
+// =====================
+// CONTACT SECTION
+// =====================
 const ContactSection = () => {
   const [formData, setFormData] = useState({
     name: "",
@@ -528,7 +1126,6 @@ const ContactSection = () => {
     <section id="contatti" className="py-16 lg:py-20 bg-white">
       <div className="max-w-7xl mx-auto px-6 lg:px-8">
         <div className="grid lg:grid-cols-2 gap-12">
-          {/* Left - Info */}
           <div>
             <span className="text-sky-500 font-semibold text-sm tracking-wider uppercase mb-4 block">Contattaci</span>
             <h2 className="text-4xl lg:text-5xl font-bold text-slate-900 mb-6">
@@ -570,7 +1167,6 @@ const ContactSection = () => {
             </div>
           </div>
 
-          {/* Right - Form */}
           <div className="bg-slate-50 rounded-3xl p-8 lg:p-10">
             <form onSubmit={handleSubmit} className="space-y-6" data-testid="contact-form">
               <div className="grid sm:grid-cols-2 gap-4">
@@ -620,7 +1216,7 @@ const ContactSection = () => {
                       <SelectItem value="catasto">Aggiornamenti Catastali</SelectItem>
                       <SelectItem value="ape">Certificazione APE</SelectItem>
                       <SelectItem value="visure">Visure e Atti</SelectItem>
-                      <SelectItem value="combo">Esempio di Combo Unica</SelectItem>
+                      <SelectItem value="combo">Combo Unica</SelectItem>
                       <SelectItem value="altro">Altro</SelectItem>
                     </SelectContent>
                   </Select>
@@ -659,16 +1255,17 @@ const ContactSection = () => {
   );
 };
 
-// Footer
+// =====================
+// FOOTER
+// =====================
 const Footer = () => {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="bg-slate-900 text-white py-16">
+    <footer className="bg-slate-900 text-white py-12">
       <div className="max-w-7xl mx-auto px-6 lg:px-8">
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">
-          {/* Brand */}
-          <div className="lg:col-span-2">
+        <div className="grid md:grid-cols-2 gap-12 mb-12">
+          <div>
             <div className="text-2xl font-bold mb-4">
               spazio<span className="text-sky-400">pratiche</span>
             </div>
@@ -723,12 +1320,38 @@ const Footer = () => {
   );
 };
 
-// Main App Component
+// =====================
+// MAIN APP
+// =====================
 function App() {
+  const { user, token, loading, login, logout, register } = useAuth();
+  const [isBookingOpen, setIsBookingOpen] = useState(false);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-900">
+        <div className="text-white">Caricamento...</div>
+      </div>
+    );
+  }
+
   return (
     <div className="App">
       <Toaster position="top-center" richColors />
-      <Navigation />
+      <Navigation 
+        onOpenBooking={() => setIsBookingOpen(true)} 
+        user={user}
+        onLogout={logout}
+      />
+      <BookingModal 
+        isOpen={isBookingOpen}
+        onClose={() => setIsBookingOpen(false)}
+        user={user}
+        token={token}
+        onLogin={login}
+        onLogout={logout}
+        onRegister={register}
+      />
       <HeroSection />
       <ServicesSection />
       <ProcessSection />
