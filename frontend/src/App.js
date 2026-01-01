@@ -655,10 +655,23 @@ const BookingModal = ({ isOpen, onClose, user, onLogin, onLogout, onRegister, to
                     <h4 className="font-semibold text-slate-900 mb-3">I tuoi appuntamenti</h4>
                     <div className="space-y-2">
                       {myAppointments.map(apt => (
-                        <div key={apt.id} className="flex items-center justify-between bg-green-50 rounded-lg p-3">
+                        <div key={apt.id} className={`flex items-center justify-between rounded-lg p-3 ${
+                          apt.status === 'confirmed' ? 'bg-green-50' : 
+                          apt.status === 'pending' ? 'bg-yellow-50' : 'bg-slate-50'
+                        }`}>
                           <div>
                             <p className="font-medium text-slate-900">{formatDate(apt.date)}</p>
                             <p className="text-sm text-slate-600">{apt.time} - {apt.duration_minutes} min</p>
+                            {apt.status === 'pending' && (
+                              <span className="inline-block mt-1 text-xs font-medium text-yellow-700 bg-yellow-100 px-2 py-0.5 rounded-full">
+                                ⏳ In attesa di conferma
+                              </span>
+                            )}
+                            {apt.status === 'confirmed' && (
+                              <span className="inline-block mt-1 text-xs font-medium text-green-700 bg-green-100 px-2 py-0.5 rounded-full">
+                                ✓ Confermato
+                              </span>
+                            )}
                           </div>
                           <button 
                             onClick={() => handleCancelAppointment(apt.id)}
