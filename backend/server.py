@@ -695,6 +695,130 @@ async def cancel_appointment(appointment_id: str, current_user: User = Depends(g
     
     return {"success": True, "message": "Appuntamento cancellato"}
 
+@api_router.get("/appointments/{appointment_id}/confirm", response_class=HTMLResponse)
+async def confirm_appointment(appointment_id: str):
+    """Confirm an appointment (called by admin via email link)"""
+    apt = await db.appointments.find_one({"id": appointment_id}, {"_id": 0})
+    
+    if not apt:
+        return HTMLResponse(content="""
+            <html><body style="font-family: Arial; text-align: center; padding: 50px;">
+                <h1 style="color: #ef4444;">❌ Appuntamento non trovato</h1>
+                <p>L'appuntamento richiesto non esiste.</p>
+            </body></html>
+        """, status_code=404)
+    
+    if apt.get('status') == 'confirmed':
+        return HTMLResponse(content="""
+            <html><body style="font-family: Arial; text-align: center; padding: 50px;">
+                <h1 style="color: #f97316;">⚠️ Già confermato</h1>
+                <p>Questo appuntamento era già stato confermato.</p>
+            </body></html>
+        """)
+    
+    if apt.get('status') == 'rejected':
+        return HTMLResponse(content="""
+            <html><body style="font-family: Arial; text-align: center; padding: 50px;">
+                <h1 style="color: #f97316;">⚠️ Già rifiutato</h1>
+                <p>Questo appuntamento era già stato rifiutato.</p>
+            </body></html>
+        """)
+    
+    # Update status to confirmed
+    await db.appointments.update_one(
+        {"id": appointment_id},
+        {"$set": {"status": "confirmed"}}
+    )
+    
+    # Send confirmation email to client
+    user_email = apt.get('user_email', '')
+    if user_email:
+        send_confirmation_email(apt, user_email)
+    
+    date_formatted = datetime.strptime(apt['date'], "%Y-%m-%d").strftime("%d/%m/%Y")
+    
+    return HTMLResponse(content=f"""
+        <html>
+        <head>
+            <style>
+                body {{ font-family: Arial, sans-serif; text-align: center; padding: 50px; background: #f0fdf4; }}
+                .container {{ max-width: 500px; margin: 0 auto; background: white; padding: 40px; border-radius: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.1); }}
+                h1 {{ color: #22c55e; }}
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <h1>✓ Appuntamento Confermato!</h1>
+                <p><strong>{apt['agency_name']}</strong></p>
+                <p>📅 {date_formatted} alle {apt['time']}</p>
+                <p style="color: #64748b; margin-top: 20px;">Email di conferma inviata al cliente.</p>
+            </div>
+        </body>
+        </html>
+    """)
+
+@api_router.get("/appointments/{appointment_id}/reject", response_class=HTMLResponse)
+async def reject_appointment(appointment_id: str):
+    """Reject an appointment (called by admin via email link)"""
+    apt = await db.appointments.find_one({"id": appointment_id}, {"_id": 0})
+    
+    if not apt:
+        return HTMLResponse(content="""
+            <html><body style="font-family: Arial; text-align: center; padding: 50px;">
+                <h1 style="color: #ef4444;">❌ Appuntamento non trovato</h1>
+                <p>L'appuntamento richiesto non esiste.</p>
+            </body></html>
+        """, status_code=404)
+    
+    if apt.get('status') == 'confirmed':
+        return HTMLResponse(content="""
+            <html><body style="font-family: Arial; text-align: center; padding: 50px;">
+                <h1 style="color: #f97316;">⚠️ Già confermato</h1>
+                <p>Questo appuntamento era già stato confermato. Per cancellarlo, contatta il cliente.</p>
+            </body></html>
+        """)
+    
+    if apt.get('status') == 'rejected':
+        return HTMLResponse(content="""
+            <html><body style="font-family: Arial; text-align: center; padding: 50px;">
+                <h1 style="color: #f97316;">⚠️ Già rifiutato</h1>
+                <p>Questo appuntamento era già stato rifiutato.</p>
+            </body></html>
+        """)
+    
+    # Update status to rejected
+    await db.appointments.update_one(
+        {"id": appointment_id},
+        {"$set": {"status": "rejected"}}
+    )
+    
+    # Send rejection email to client
+    user_email = apt.get('user_email', '')
+    if user_email:
+        send_rejection_email(apt, user_email)
+    
+    date_formatted = datetime.strptime(apt['date'], "%Y-%m-%d").strftime("%d/%m/%Y")
+    
+    return HTMLResponse(content=f"""
+        <html>
+        <head>
+            <style>
+                body {{ font-family: Arial, sans-serif; text-align: center; padding: 50px; background: #fef2f2; }}
+                .container {{ max-width: 500px; margin: 0 auto; background: white; padding: 40px; border-radius: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.1); }}
+                h1 {{ color: #ef4444; }}
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <h1>✗ Appuntamento Rifiutato</h1>
+                <p><strong>{apt['agency_name']}</strong></p>
+                <p>📅 {date_formatted} alle {apt['time']}</p>
+                <p style="color: #64748b; margin-top: 20px;">Email di notifica inviata al cliente.</p>
+            </div>
+        </body>
+        </html>
+    """)
+
 # =====================
 # APP SETUP
 # =====================
