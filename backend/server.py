@@ -1,5 +1,6 @@
 from fastapi import FastAPI, APIRouter, HTTPException, Depends
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from fastapi.responses import HTMLResponse
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
@@ -13,6 +14,9 @@ from datetime import datetime, timezone, timedelta
 from passlib.context import CryptContext
 from jose import JWTError, jwt
 import secrets
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
@@ -36,9 +40,182 @@ ACCESS_TOKEN_EXPIRE_HOURS = 24
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 security = HTTPBearer()
 
+# Email Configuration
+SMTP_SERVER = os.environ.get('SMTP_SERVER', 'smtp.gmail.com')
+SMTP_PORT = int(os.environ.get('SMTP_PORT', 587))
+SMTP_EMAIL = os.environ.get('SMTP_EMAIL', '')
+SMTP_PASSWORD = os.environ.get('SMTP_PASSWORD', '')
+ADMIN_EMAIL = os.environ.get('ADMIN_EMAIL', '')
+BACKEND_URL = "https://docs-portal-12.preview.emergentagent.com"
+
 # =====================
-# MODELS
+# EMAIL FUNCTIONS
 # =====================
+
+def send_email(to_email: str, subject: str, html_content: str):
+    """Send an email using SMTP"""
+    try:
+        msg = MIMEMultipart('alternative')
+        msg['Subject'] = subject
+        msg['From'] = SMTP_EMAIL
+        msg['To'] = to_email
+        
+        html_part = MIMEText(html_content, 'html')
+        msg.attach(html_part)
+        
+        with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
+            server.starttls()
+            server.login(SMTP_EMAIL, SMTP_PASSWORD)
+            server.sendmail(SMTP_EMAIL, to_email, msg.as_string())
+        
+        logging.info(f"Email sent to {to_email}")
+        return True
+    except Exception as e:
+        logging.error(f"Failed to send email: {e}")
+        return False
+
+def send_admin_notification(appointment: dict, user_email: str):
+    """Send notification to admin with approve/reject buttons"""
+    date_formatted = datetime.strptime(appointment['date'], "%Y-%m-%d").strftime("%d/%m/%Y")
+    
+    html = f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <style>
+            body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
+            .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
+            .header {{ background: linear-gradient(135deg, #0f172a, #0369a1); color: white; padding: 20px; border-radius: 10px 10px 0 0; }}
+            .content {{ background: #f8fafc; padding: 20px; border: 1px solid #e2e8f0; }}
+            .info-row {{ padding: 10px 0; border-bottom: 1px solid #e2e8f0; }}
+            .label {{ font-weight: bold; color: #64748b; }}
+            .buttons {{ padding: 20px; text-align: center; background: #f1f5f9; border-radius: 0 0 10px 10px; }}
+            .btn {{ display: inline-block; padding: 15px 40px; margin: 10px; text-decoration: none; border-radius: 25px; font-weight: bold; font-size: 16px; }}
+            .btn-yes {{ background: #22c55e; color: white; }}
+            .btn-no {{ background: #ef4444; color: white; }}
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="header">
+                <h2 style="margin:0;">📅 Nuova Richiesta Appuntamento</h2>
+            </div>
+            <div class="content">
+                <div class="info-row">
+                    <span class="label">Cliente:</span> {appointment['user_name']}
+                </div>
+                <div class="info-row">
+                    <span class="label">Agenzia:</span> {appointment['agency_name']}
+                </div>
+                <div class="info-row">
+                    <span class="label">Email:</span> {user_email}
+                </div>
+                <div class="info-row">
+                    <span class="label">Data:</span> {date_formatted}
+                </div>
+                <div class="info-row">
+                    <span class="label">Ora:</span> {appointment['time']}
+                </div>
+                <div class="info-row">
+                    <span class="label">Durata:</span> {appointment['duration_minutes']} minuti
+                </div>
+                <div class="info-row">
+                    <span class="label">Note:</span> {appointment.get('notes', 'Nessuna nota')}
+                </div>
+            </div>
+            <div class="buttons">
+                <p style="margin-bottom: 15px; color: #64748b;">Vuoi confermare questo appuntamento?</p>
+                <a href="{BACKEND_URL}/api/appointments/{appointment['id']}/confirm" class="btn btn-yes">✓ SÌ, CONFERMA</a>
+                <a href="{BACKEND_URL}/api/appointments/{appointment['id']}/reject" class="btn btn-no">✗ NO, RIFIUTA</a>
+            </div>
+        </div>
+    </body>
+    </html>
+    """
+    
+    send_email(ADMIN_EMAIL, f"🗓️ Nuova richiesta appuntamento - {appointment['agency_name']}", html)
+
+def send_confirmation_email(appointment: dict, user_email: str):
+    """Send confirmation email to client"""
+    date_formatted = datetime.strptime(appointment['date'], "%Y-%m-%d").strftime("%d/%m/%Y")
+    
+    html = f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <style>
+            body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
+            .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
+            .header {{ background: linear-gradient(135deg, #22c55e, #16a34a); color: white; padding: 30px; border-radius: 10px 10px 0 0; text-align: center; }}
+            .content {{ background: #f8fafc; padding: 30px; border: 1px solid #e2e8f0; border-radius: 0 0 10px 10px; }}
+            .highlight {{ background: white; padding: 20px; border-radius: 10px; margin: 20px 0; border-left: 4px solid #22c55e; }}
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="header">
+                <h1 style="margin:0;">✓ Appuntamento Confermato!</h1>
+            </div>
+            <div class="content">
+                <p>Gentile <strong>{appointment['user_name']}</strong>,</p>
+                
+                <p>Il tuo appuntamento del giorno <strong>{date_formatted}</strong> alle ore <strong>{appointment['time']}</strong> è confermato.</p>
+                
+                <div class="highlight">
+                    <strong>📍 Ci vediamo lì!</strong><br>
+                    Via Belfiore 9, 20149 Milano
+                </div>
+                
+                <p>Per qualsiasi necessità, contattaci al numero <strong>02/35988262</strong></p>
+                
+                <p>A presto,<br>
+                <strong>Il team di Spaziopratiche</strong></p>
+            </div>
+        </div>
+    </body>
+    </html>
+    """
+    
+    send_email(user_email, "✓ Appuntamento Confermato - Spaziopratiche", html)
+
+def send_rejection_email(appointment: dict, user_email: str):
+    """Send rejection email to client"""
+    date_formatted = datetime.strptime(appointment['date'], "%Y-%m-%d").strftime("%d/%m/%Y")
+    
+    html = f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <style>
+            body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
+            .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
+            .header {{ background: linear-gradient(135deg, #f97316, #ea580c); color: white; padding: 30px; border-radius: 10px 10px 0 0; text-align: center; }}
+            .content {{ background: #f8fafc; padding: 30px; border: 1px solid #e2e8f0; border-radius: 0 0 10px 10px; }}
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="header">
+                <h1 style="margin:0;">Appuntamento Non Disponibile</h1>
+            </div>
+            <div class="content">
+                <p>Gentile <strong>{appointment['user_name']}</strong>,</p>
+                
+                <p>Siamo spiacenti, ma l'appuntamento richiesto per il giorno <strong>{date_formatted}</strong> alle ore <strong>{appointment['time']}</strong> non è disponibile.</p>
+                
+                <p>Ti invitiamo a selezionare un'altra data o orario dalla nostra piattaforma di prenotazione.</p>
+                
+                <p>Per qualsiasi necessità, contattaci al numero <strong>02/35988262</strong></p>
+                
+                <p>Ci scusiamo per il disagio,<br>
+                <strong>Il team di Spaziopratiche</strong></p>
+            </div>
+        </div>
+    </body>
+    </html>
+    """
+    
+    send_email(user_email, "Appuntamento Non Disponibile - Spaziopratiche", html)
 
 class StatusCheck(BaseModel):
     model_config = ConfigDict(extra="ignore")
