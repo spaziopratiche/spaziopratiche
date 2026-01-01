@@ -306,7 +306,11 @@ class TokenResponse(BaseModel):
 class AppointmentCreate(BaseModel):
     date: str  # YYYY-MM-DD
     time: str  # HH:MM
-    notes: Optional[str] = None
+    # Campi obbligatori per la prenotazione
+    appointment_address: str = Field(..., min_length=5, max_length=200)
+    contact_person: str = Field(..., min_length=2, max_length=100)
+    contact_phone: str = Field(..., min_length=6, max_length=20)
+    intercom_name: Optional[str] = Field(None, max_length=100)  # A chi citofonare (opzionale)
 
 class Appointment(BaseModel):
     model_config = ConfigDict(extra="ignore")
@@ -317,7 +321,10 @@ class Appointment(BaseModel):
     date: str
     time: str
     duration_minutes: int = 45
-    notes: Optional[str] = None
+    appointment_address: str = ""
+    contact_person: str = ""
+    contact_phone: str = ""
+    intercom_name: Optional[str] = None
     status: str = "confirmed"
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
