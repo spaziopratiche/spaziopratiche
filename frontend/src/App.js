@@ -1414,6 +1414,143 @@ const Footer = ({ onShowPrivacy, onShowCookie }) => {
 };
 
 // =====================
+// PRIVACY POLICY PAGE
+// =====================
+const PrivacyPolicy = ({ onClose }) => {
+  return (
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
+      <div className="bg-white rounded-3xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden">
+        <div className="bg-gradient-to-r from-slate-900 to-sky-900 px-6 py-4 flex items-center justify-between">
+          <h2 className="text-xl font-bold text-white">Privacy Policy</h2>
+          <button onClick={onClose} className="text-white/80 hover:text-white">
+            <X className="w-6 h-6" />
+          </button>
+        </div>
+        <div className="p-8 overflow-y-auto max-h-[calc(90vh-80px)] prose prose-slate max-w-none">
+          <p className="text-sm text-slate-500 mb-6">Ultimo aggiornamento: Gennaio 2025</p>
+          
+          <h3 className="text-xl font-bold text-slate-900">1. Titolare del Trattamento</h3>
+          <p>Il Titolare del trattamento dei dati è:</p>
+          <p><strong>Arch. Marco Steve Sellitti</strong><br />
+          Via Belfiore 9, 20149 Milano<br />
+          Email: info@spaziopratiche.it<br />
+          Tel: 02/35988262</p>
+
+          <h3 className="text-xl font-bold text-slate-900 mt-6">2. Tipologie di Dati Raccolti</h3>
+          <p>Fra i Dati Personali raccolti da questo sito, in modo autonomo o tramite terze parti, ci sono:</p>
+          <ul>
+            <li>Dati di contatto (nome, cognome, email, telefono)</li>
+            <li>Dati aziendali (ragione sociale, partita IVA, sede legale, codice univoco)</li>
+            <li>Dati di navigazione e cookie tecnici</li>
+          </ul>
+
+          <h3 className="text-xl font-bold text-slate-900 mt-6">3. Finalità del Trattamento</h3>
+          <p>I dati dell'Utente sono raccolti per le seguenti finalità:</p>
+          <ul>
+            <li>Erogazione dei servizi richiesti</li>
+            <li>Gestione degli appuntamenti</li>
+            <li>Rispondere alle richieste di contatto</li>
+            <li>Adempimenti amministrativi e fiscali</li>
+          </ul>
+
+          <h3 className="text-xl font-bold text-slate-900 mt-6">4. Base Giuridica del Trattamento</h3>
+          <p>Il trattamento dei dati si basa su:</p>
+          <ul>
+            <li>Consenso dell'interessato</li>
+            <li>Esecuzione di un contratto</li>
+            <li>Adempimento di obblighi legali</li>
+          </ul>
+
+          <h3 className="text-xl font-bold text-slate-900 mt-6">5. Modalità di Trattamento</h3>
+          <p>Il trattamento viene effettuato mediante strumenti informatici e/o telematici, con modalità organizzative e logiche strettamente correlate alle finalità indicate.</p>
+
+          <h3 className="text-xl font-bold text-slate-900 mt-6">6. Conservazione dei Dati</h3>
+          <p>I dati sono conservati per il tempo strettamente necessario a conseguire gli scopi per cui sono stati raccolti e comunque non oltre i termini previsti dalla legge.</p>
+
+          <h3 className="text-xl font-bold text-slate-900 mt-6">7. Diritti dell'Interessato</h3>
+          <p>Gli Utenti possono esercitare determinati diritti con riferimento ai Dati trattati dal Titolare. In particolare, l'Utente ha il diritto di:</p>
+          <ul>
+            <li>Accedere ai propri dati</li>
+            <li>Richiedere la rettifica o la cancellazione</li>
+            <li>Limitare il trattamento</li>
+            <li>Opporsi al trattamento</li>
+            <li>Richiedere la portabilità dei dati</li>
+            <li>Revocare il consenso</li>
+            <li>Proporre reclamo all'Autorità Garante</li>
+          </ul>
+
+          <h3 className="text-xl font-bold text-slate-900 mt-6">8. Contatti</h3>
+          <p>Per esercitare i propri diritti o per qualsiasi informazione relativa al trattamento dei dati personali, è possibile contattare il Titolare all'indirizzo email: <strong>info@spaziopratiche.it</strong></p>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// =====================
+// COOKIE POLICY PAGE
+// =====================
+const CookiePolicy = ({ onClose }) => {
+  return (
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
+      <div className="bg-white rounded-3xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden">
+        <div className="bg-gradient-to-r from-slate-900 to-sky-900 px-6 py-4 flex items-center justify-between">
+          <h2 className="text-xl font-bold text-white">Cookie Policy</h2>
+          <button onClick={onClose} className="text-white/80 hover:text-white">
+            <X className="w-6 h-6" />
+          </button>
+        </div>
+        <div className="p-8 overflow-y-auto max-h-[calc(90vh-80px)] prose prose-slate max-w-none">
+          <p className="text-sm text-slate-500 mb-6">Ultimo aggiornamento: Gennaio 2025</p>
+          
+          <h3 className="text-xl font-bold text-slate-900">1. Cosa sono i Cookie</h3>
+          <p>I cookie sono piccoli file di testo che i siti visitati inviano al browser dell'utente, dove vengono memorizzati per essere poi ritrasmessi agli stessi siti alla visita successiva.</p>
+
+          <h3 className="text-xl font-bold text-slate-900 mt-6">2. Titolare del Trattamento</h3>
+          <p><strong>Arch. Marco Steve Sellitti</strong><br />
+          Via Belfiore 9, 20149 Milano<br />
+          Email: info@spaziopratiche.it</p>
+
+          <h3 className="text-xl font-bold text-slate-900 mt-6">3. Tipologie di Cookie Utilizzati</h3>
+          
+          <h4 className="text-lg font-semibold text-slate-800 mt-4">Cookie Tecnici (necessari)</h4>
+          <p>Questi cookie sono essenziali per il corretto funzionamento del sito e non possono essere disabilitati. Includono:</p>
+          <ul>
+            <li>Cookie di sessione per la gestione del login</li>
+            <li>Cookie per le preferenze di navigazione</li>
+            <li>Cookie per la sicurezza</li>
+          </ul>
+
+          <h4 className="text-lg font-semibold text-slate-800 mt-4">Cookie Funzionali</h4>
+          <p>Questi cookie permettono al sito di ricordare le scelte dell'utente e fornire funzionalità personalizzate.</p>
+
+          <h3 className="text-xl font-bold text-slate-900 mt-6">4. Cookie di Terze Parti</h3>
+          <p>Il sito non utilizza cookie di profilazione o di tracciamento di terze parti a fini pubblicitari.</p>
+
+          <h3 className="text-xl font-bold text-slate-900 mt-6">5. Gestione dei Cookie</h3>
+          <p>L'utente può gestire le preferenze relative ai cookie attraverso le impostazioni del proprio browser. Ecco i link alle istruzioni dei principali browser:</p>
+          <ul>
+            <li><a href="https://support.google.com/chrome/answer/95647" target="_blank" rel="noopener noreferrer" className="text-sky-500 hover:underline">Google Chrome</a></li>
+            <li><a href="https://support.mozilla.org/it/kb/protezione-antitracciamento-avanzata-firefox-desktop" target="_blank" rel="noopener noreferrer" className="text-sky-500 hover:underline">Mozilla Firefox</a></li>
+            <li><a href="https://support.apple.com/it-it/guide/safari/sfri11471/mac" target="_blank" rel="noopener noreferrer" className="text-sky-500 hover:underline">Safari</a></li>
+            <li><a href="https://support.microsoft.com/it-it/microsoft-edge/eliminare-i-cookie-in-microsoft-edge-63947406-40ac-c3b8-57b9-2a946a29ae09" target="_blank" rel="noopener noreferrer" className="text-sky-500 hover:underline">Microsoft Edge</a></li>
+          </ul>
+
+          <h3 className="text-xl font-bold text-slate-900 mt-6">6. Conseguenze della Disabilitazione dei Cookie</h3>
+          <p>La disabilitazione dei cookie tecnici potrebbe compromettere l'utilizzo di alcune funzionalità del sito, come il sistema di login e la prenotazione degli appuntamenti.</p>
+
+          <h3 className="text-xl font-bold text-slate-900 mt-6">7. Aggiornamenti</h3>
+          <p>La presente Cookie Policy può essere soggetta a modifiche nel tempo. Si consiglia di consultare periodicamente questa pagina.</p>
+
+          <h3 className="text-xl font-bold text-slate-900 mt-6">8. Contatti</h3>
+          <p>Per qualsiasi domanda relativa alla presente Cookie Policy, è possibile contattarci all'indirizzo: <strong>info@spaziopratiche.it</strong></p>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// =====================
 // MAIN APP
 // =====================
 function App() {
