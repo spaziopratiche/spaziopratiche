@@ -1401,7 +1401,7 @@ const Footer = ({ onShowPrivacy, onShowCookie }) => {
 
         <div className="border-t border-slate-800 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
           <p className="text-slate-500 text-sm">
-            © {currentYear} Spaziopratiche - Arch. Marco Steve Sellitti. Tutti i diritti riservati.
+            © {currentYear} Spaziopratiche. Tutti i diritti riservati.
           </p>
           <div className="flex gap-6 text-sm text-slate-500">
             <button onClick={onShowPrivacy} className="hover:text-white transition-colors">Privacy Policy</button>
