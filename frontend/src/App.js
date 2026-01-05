@@ -1556,6 +1556,8 @@ const CookiePolicy = ({ onClose }) => {
 function App() {
   const { user, token, loading, login, logout, register } = useAuth();
   const [isBookingOpen, setIsBookingOpen] = useState(false);
+  const [showPrivacy, setShowPrivacy] = useState(false);
+  const [showCookie, setShowCookie] = useState(false);
 
   if (loading) {
     return (
@@ -1582,6 +1584,8 @@ function App() {
         onLogout={logout}
         onRegister={register}
       />
+      {showPrivacy && <PrivacyPolicy onClose={() => setShowPrivacy(false)} />}
+      {showCookie && <CookiePolicy onClose={() => setShowCookie(false)} />}
       <HeroSection />
       <ServicesSection />
       <ProcessSection />
@@ -1589,7 +1593,10 @@ function App() {
       <WhyUsSection />
       <PricingSection />
       <ContactSection />
-      <Footer />
+      <Footer 
+        onShowPrivacy={() => setShowPrivacy(true)}
+        onShowCookie={() => setShowCookie(true)}
+      />
     </div>
   );
 }
