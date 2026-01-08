@@ -1231,7 +1231,8 @@ const ContactSection = () => {
                 </div>
                 <div>
                   <p className="text-sm text-slate-500">Telefono</p>
-                  <p className="font-semibold text-slate-900">02/35988262</p>
+                  <p className="font-semibold text-slate-900">338/4071025</p>
+                  <p className="font-semibold text-slate-900">334/7077175</p>
                 </div>
               </div>
               <div className="flex items-center gap-4">
