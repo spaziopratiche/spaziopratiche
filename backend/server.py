@@ -178,7 +178,7 @@ def send_confirmation_email(appointment: dict, user_email: str):
                     Via Belfiore 9, 20149 Milano
                 </div>
                 
-                <p>Per qualsiasi necessità, contattaci al numero <strong>02/35988262</strong></p>
+                <p>Per qualsiasi necessità, contattaci ai numeri <strong>338/4071025</strong> o <strong>334/7077175</strong></p>
                 
                 <p>A presto,<br>
                 <strong>Il team di Spaziopratiche</strong></p>
@@ -217,7 +217,7 @@ def send_rejection_email(appointment: dict, user_email: str):
                 
                 <p>Ti invitiamo a selezionare un'altra data o orario dalla nostra piattaforma di prenotazione.</p>
                 
-                <p>Per qualsiasi necessità, contattaci al numero <strong>02/35988262</strong></p>
+                <p>Per qualsiasi necessità, contattaci ai numeri <strong>338/4071025</strong> o <strong>334/7077175</strong></p>
                 
                 <p>Ci scusiamo per il disagio,<br>
                 <strong>Il team di Spaziopratiche</strong></p>
