@@ -216,10 +216,10 @@ const Navigation = ({ onOpenBooking, user, onLogout }) => {
             ))}
             <Button 
               onClick={() => { onOpenBooking(); setIsMobileMenuOpen(false); }}
-              className="w-full mt-4 bg-sky-500 hover:bg-sky-600 text-white rounded-full"
+              className={`w-full mt-4 bg-sky-500 hover:bg-sky-600 text-white rounded-full ${!user ? 'hidden' : ''}`}
             >
               <Calendar className="w-4 h-4 mr-2" />
-              {user ? "Prenota Appuntamento" : "Area Clienti"}
+              Prenota Appuntamento
             </Button>
           </div>
         )}
