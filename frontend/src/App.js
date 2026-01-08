@@ -864,15 +864,16 @@ const HeroSection = () => {
         </div>
 
         <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold text-white mb-6 leading-tight">
-          Concentrati sulla vendita.
+          Concentrati sulla vendita,
           <br />
           <span className="text-transparent bg-clip-text bg-gradient-to-r from-sky-400 to-blue-500">
-            La burocrazia è il nostro mondo.
+            alle pratiche pensiamo noi.
           </span>
         </h1>
 
         <p className="text-lg md:text-xl text-white/70 max-w-2xl mx-auto mb-12">
-          Concentrati sulla vendita, alle pratiche pensiamo noi.
+          Una soluzione completa e personalizzata a supporto delle agenzie immobiliari. 
+          Dal rilievo al rogito, senza pensieri.
         </p>
 
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
