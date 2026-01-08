@@ -54,6 +54,7 @@ BACKEND_URL = "https://spaziopratiche-production.up.railway.app"
 def send_email(to_email: str, subject: str, html_content: str):
     """Send an email using Resend API"""
     try:
+        logging.info(f"Attempting to send email to {to_email}")
         response = requests.post(
             "https://api.resend.com/emails",
             headers={
@@ -68,7 +69,9 @@ def send_email(to_email: str, subject: str, html_content: str):
             }
         )
         
-        if response.status_code == 200:
+        logging.info(f"Resend response: {response.status_code} - {response.text}")
+        
+        if response.status_code in [200, 202]:
             logging.info(f"Email sent to {to_email}")
             return True
         else:
