@@ -186,15 +186,7 @@ const Navigation = ({ onOpenBooking, user, onLogout }) => {
                   <LogOut className="w-4 h-4" />
                 </button>
               </div>
-            ) : (
-              <Button 
-                onClick={onOpenBooking}
-                className="bg-sky-500 hover:bg-sky-600 text-white rounded-full px-6"
-              >
-                <Calendar className="w-4 h-4 mr-2" />
-                Area Clienti
-              </Button>
-            )}
+            ) : null}
           </div>
 
           {/* Mobile Menu Button */}
