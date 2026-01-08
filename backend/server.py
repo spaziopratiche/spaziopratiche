@@ -63,10 +63,16 @@ def send_email(to_email: str, subject: str, html_content: str):
         html_part = MIMEText(html_content, 'html')
         msg.attach(html_part)
         
-        with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
-            server.starttls()
-            server.login(SMTP_EMAIL, SMTP_PASSWORD)
-            server.sendmail(SMTP_EMAIL, to_email, msg.as_string())
+        # Usa SSL per porta 465 (Aruba), STARTTLS per porta 587 (Gmail)
+        if SMTP_PORT == 465:
+            with smtplib.SMTP_SSL(SMTP_SERVER, SMTP_PORT) as server:
+                server.login(SMTP_EMAIL, SMTP_PASSWORD)
+                server.sendmail(SMTP_EMAIL, to_email, msg.as_string())
+        else:
+            with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
+                server.starttls()
+                server.login(SMTP_EMAIL, SMTP_PASSWORD)
+                server.sendmail(SMTP_EMAIL, to_email, msg.as_string())
         
         logging.info(f"Email sent to {to_email}")
         return True
