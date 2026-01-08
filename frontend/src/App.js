@@ -880,8 +880,7 @@ const HeroSection = () => {
         </h1>
 
         <p className="text-lg md:text-xl text-white/70 max-w-2xl mx-auto mb-12">
-          Una soluzione completa e personalizzata a supporto delle agenzie immobiliari. 
-          Dal rilievo al rogito, senza pensieri.
+          Concentrati sulla vendita, alle pratiche pensiamo noi.
         </p>
 
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
