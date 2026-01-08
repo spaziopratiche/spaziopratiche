@@ -17,6 +17,7 @@ import secrets
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
+import requests
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
@@ -40,42 +41,39 @@ ACCESS_TOKEN_EXPIRE_HOURS = 24
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 security = HTTPBearer()
 
-# Email Configuration
-SMTP_SERVER = os.environ.get('SMTP_SERVER', 'smtp.gmail.com')
-SMTP_PORT = int(os.environ.get('SMTP_PORT', 587))
-SMTP_EMAIL = os.environ.get('SMTP_EMAIL', '')
-SMTP_PASSWORD = os.environ.get('SMTP_PASSWORD', '')
-ADMIN_EMAIL = os.environ.get('ADMIN_EMAIL', '')
-BACKEND_URL = "https://docs-portal-12.preview.emergentagent.com"
+# Email Configuration - Resend
+RESEND_API_KEY = os.environ.get('RESEND_API_KEY', '')
+ADMIN_EMAIL = os.environ.get('ADMIN_EMAIL', 'info@spaziopratiche.it')
+FROM_EMAIL = os.environ.get('FROM_EMAIL', 'onboarding@resend.dev')
+BACKEND_URL = "https://spaziopratiche-production.up.railway.app"
 
 # =====================
 # EMAIL FUNCTIONS
 # =====================
 
 def send_email(to_email: str, subject: str, html_content: str):
-    """Send an email using SMTP"""
+    """Send an email using Resend API"""
     try:
-        msg = MIMEMultipart('alternative')
-        msg['Subject'] = subject
-        msg['From'] = SMTP_EMAIL
-        msg['To'] = to_email
+        response = requests.post(
+            "https://api.resend.com/emails",
+            headers={
+                "Authorization": f"Bearer {RESEND_API_KEY}",
+                "Content-Type": "application/json"
+            },
+            json={
+                "from": FROM_EMAIL,
+                "to": [to_email],
+                "subject": subject,
+                "html": html_content
+            }
+        )
         
-        html_part = MIMEText(html_content, 'html')
-        msg.attach(html_part)
-        
-        # Usa SSL per porta 465 (Aruba), STARTTLS per porta 587 (Gmail)
-        if SMTP_PORT == 465:
-            with smtplib.SMTP_SSL(SMTP_SERVER, SMTP_PORT) as server:
-                server.login(SMTP_EMAIL, SMTP_PASSWORD)
-                server.sendmail(SMTP_EMAIL, to_email, msg.as_string())
+        if response.status_code == 200:
+            logging.info(f"Email sent to {to_email}")
+            return True
         else:
-            with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
-                server.starttls()
-                server.login(SMTP_EMAIL, SMTP_PASSWORD)
-                server.sendmail(SMTP_EMAIL, to_email, msg.as_string())
-        
-        logging.info(f"Email sent to {to_email}")
-        return True
+            logging.error(f"Failed to send email: {response.text}")
+            return False
     except Exception as e:
         logging.error(f"Failed to send email: {e}")
         return False
