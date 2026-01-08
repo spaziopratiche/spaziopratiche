@@ -44,7 +44,7 @@ security = HTTPBearer()
 # Email Configuration - Resend
 RESEND_API_KEY = os.environ.get('RESEND_API_KEY', '')
 ADMIN_EMAIL = os.environ.get('ADMIN_EMAIL', 'info@spaziopratiche.it')
-FROM_EMAIL = os.environ.get('FROM_EMAIL', 'onboarding@resend.dev')
+FROM_EMAIL = "Spaziopratiche <noreply@spaziopratiche.it>"
 BACKEND_URL = "https://spaziopratiche-production.up.railway.app"
 
 # =====================
