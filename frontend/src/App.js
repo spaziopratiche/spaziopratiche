@@ -978,7 +978,6 @@ const ServicesSection = () => {
               
               <div className="lg:col-span-7 flex items-center justify-between">
                 <p className="text-slate-600 max-w-xl">{service.description}</p>
-                <ArrowRight className="h-6 w-6 text-slate-300 group-hover:text-sky-500 group-hover:translate-x-2 transition-all hidden lg:block" />
               </div>
             </div>
           ))}
