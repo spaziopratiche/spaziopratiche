@@ -1381,7 +1381,7 @@ const Footer = ({ onShowPrivacy, onShowCookie }) => {
               </li>
               <li className="flex items-center gap-2">
                 <Phone className="h-4 w-4" />
-                02/35988262
+                338/4071025 - 334/7077175
               </li>
               <li className="flex items-center gap-2">
                 <MapPin className="h-4 w-4" />
