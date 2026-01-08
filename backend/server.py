@@ -413,6 +413,49 @@ async def submit_contact(input: ContactRequestCreate):
         doc = contact_obj.model_dump()
         doc['created_at'] = doc['created_at'].isoformat()
         await db.contact_requests.insert_one(doc)
+        
+        # Invia email di notifica
+        html_email = f"""
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <style>
+                body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
+                .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
+                .header {{ background: linear-gradient(135deg, #0f172a, #0369a1); color: white; padding: 20px; border-radius: 10px 10px 0 0; }}
+                .content {{ background: #f8fafc; padding: 20px; border: 1px solid #e2e8f0; border-radius: 0 0 10px 10px; }}
+                .info-row {{ padding: 10px 0; border-bottom: 1px solid #e2e8f0; }}
+                .label {{ font-weight: bold; color: #64748b; }}
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <div class="header">
+                    <h2 style="margin:0;">📩 Nuova Richiesta dal Sito</h2>
+                </div>
+                <div class="content">
+                    <div class="info-row">
+                        <span class="label">Nome:</span> {input.name}
+                    </div>
+                    <div class="info-row">
+                        <span class="label">Email:</span> {input.email}
+                    </div>
+                    <div class="info-row">
+                        <span class="label">Telefono:</span> {input.phone or 'Non specificato'}
+                    </div>
+                    <div class="info-row">
+                        <span class="label">Servizio richiesto:</span> {input.service}
+                    </div>
+                    <div class="info-row">
+                        <span class="label">Messaggio:</span><br>{input.message}
+                    </div>
+                </div>
+            </div>
+        </body>
+        </html>
+        """
+        send_email(ADMIN_EMAIL, f"📩 Nuova richiesta dal sito - {input.name}", html_email)
+        
         return ContactResponse(
             success=True,
             message="Richiesta inviata con successo! Ti contatteremo presto.",
